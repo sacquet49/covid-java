@@ -1,4 +1,4 @@
-package fr.sacquet.covid.model;
+package fr.sacquet.covid.model.fichier;
 
 import lombok.*;
 
