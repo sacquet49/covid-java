@@ -1,12 +1,11 @@
 package fr.sacquet.covid.services;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import fr.sacquet.covid.model.FichierCovid;
-import fr.sacquet.covid.model.RootFichierCovid;
+import fr.sacquet.covid.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -17,11 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static fr.sacquet.covid.model.FileName.*;
 
 @Service
 @AllArgsConstructor
@@ -40,19 +37,56 @@ public class CovidService {
         return response.getBody();
     }
 
+    public List<NouveauxCovid19> getDecesByDay() {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            File targetFile = new File("F://covidFile//" + NEW_HOSP + ".json");
+            NouveauxCovid19[] newCovidList = objectMapper.readValue(targetFile, NouveauxCovid19[].class);
+            return Arrays.asList(newCovidList);
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("Erreur lecture du fichier " + NEW_HOSP);
+        }
+        return Collections.emptyList();
+    }
+
+    public List<ClasseAgeCovid19> getLabelsDayByDate() {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            File targetFile = new File("F://covidFile//" + CLASS_AGE + ".json");
+            ClasseAgeCovid19[] classAge = objectMapper.readValue(targetFile, ClasseAgeCovid19[].class);
+            return Arrays.asList(classAge);
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("Erreur lecture du fichier " + CLASS_AGE);
+        }
+        return Collections.emptyList();
+    }
+
+    public List<Covid19> getDataByTypeAndSexAndDepartement() {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            File targetFile = new File("F://covidFile//" + HOSP + ".json");
+            Covid19[] covid = objectMapper.readValue(targetFile, Covid19[].class);
+            return Arrays.asList(covid);
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("Erreur lecture du fichier " + HOSP);
+        }
+        return Collections.emptyList();
+    }
+
     private void saveFile(FichierCovid file) {
         log.info(file.getLatest());
         try {
             URL url = new URL(file.getLatest());
             InputStream in = new BufferedInputStream(url.openStream());
-            File targetFile = new File("F://covidFile//" + file.getTitle().replace(".csv", ".json" ));
+            String nomFichier = file.getTitle().substring(0, file.getTitle().length() - 21);
+            log.info(nomFichier);
+            File targetFile = new File("F://covidFile//" + nomFichier + ".json");
             convertCsvToJson(in, targetFile);
-            /*java.nio.file.Files.copy(
-                    in,
-                    targetFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
-
-            IOUtils.closeQuietly(in);*/
         } catch (MalformedURLException e) {
             e.printStackTrace();
             log.error("Erreur ecriture du fichier");
