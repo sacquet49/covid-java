@@ -1,13 +1,16 @@
 package fr.sacquet.covid.controller;
 
+import fr.sacquet.covid.model.fichier.ClasseAgeCovid19;
 import fr.sacquet.covid.model.form.FiltreCovid;
 import fr.sacquet.covid.model.rest.RootFichierCovid;
 import fr.sacquet.covid.services.CovidService;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 import static fr.sacquet.covid.conf.Constante.PUBLIC_API;
@@ -26,12 +29,12 @@ public class CovidController {
 
     @GetMapping(value = PUBLIC_API + "/{filtre}/{sex}/{departement}")
     public Map<String, Integer> getDataBySexAndDepartement(FiltreCovid filtreCovid) {
-        return service.getDataByTypeAndSexAndDepartement(filtreCovid);
+        return service.getDataHospByFiltreCovid(filtreCovid);
     }
 
     @GetMapping(value = PUBLIC_API + "/hospCourant/byDate/{filtre}/{sex}/{departement}/{dateMin}/{dateMax}")
     public Map<String, Integer> getDataByTypeAndSexAndDepartementAndDate(FiltreCovid filtreCovid) {
-        return service.getDecesByDay();
+        return service.getDataHospByFiltreCovid(filtreCovid);
     }
 
     @GetMapping(value = PUBLIC_API + "/decesByDay")
@@ -50,17 +53,17 @@ public class CovidController {
     }
 
     @GetMapping(value = PUBLIC_API + "/trancheAge/{filtre}/{dateMin}/{dateMax}/{region}")
-    public Map<String, Integer> getHospitaliseByTrancheAge(FiltreCovid filtreCovid) {
-        return service.getDecesByDay();
+    public Map<Pair<String, String>, Integer> getHospitaliseByTrancheAge(FiltreCovid filtreCovid) {
+        return service.getDataClassAgeByFiltreCovid(filtreCovid);
     }
 
     @GetMapping(value = PUBLIC_API + "/hospitalise/{filtre}/trancheAge/byDate/{date}")
-    public Map<String, Integer> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
-        return service.getDecesByDay();
+    public Map<Pair<String, String>, Integer> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
+        return service.getDataClassAgeByFiltreCovid(filtreCovid);
     }
 
     @GetMapping(value = PUBLIC_API + "/hospitalise/variation/{filtre}/trancheAge/byDate/{dateMin}/{dateMax}")
-    public Map<String, Integer> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
-        return service.getDecesByDay();
+    public Map<Pair<String, String>, Integer> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
+        return service.getDataClassAgeByFiltreCovid(filtreCovid);
     }
 }
