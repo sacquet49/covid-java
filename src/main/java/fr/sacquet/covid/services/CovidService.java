@@ -66,6 +66,9 @@ public class CovidService {
         } else if ("hosp".equals(filtreCovid.getFiltre())) {
             counting = nouveauxCovid19List.stream()
                     .collect(groupingBy(Covid19::getJour, summingInt(Covid19::getHosp)));
+        } else if ("dc".equals(filtreCovid.getFiltre())) {
+            counting = nouveauxCovid19List.stream()
+                    .collect(groupingBy(Covid19::getJour, summingInt(Covid19::getDc)));
         }
         return counting.entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
@@ -78,9 +81,20 @@ public class CovidService {
                 .filter(covid19 -> filterRegion(filtreCovid.getDepartement(), covid19) &&
                         filterDate(filtreCovid, covid19.getJour())
                 ).toList();
-        Map<Pair<String, String>, Integer> counting = nouveauxCovid19List.stream()
-                .collect(groupingBy(covid ->
-                        Pair.of(covid.getJour(), covid.getCl_age90()), summingInt(ClasseAgeCovid19::getHosp)));
+        Map<Pair<String, String>, Integer> counting = null;
+        if ("rea".equals(filtreCovid.getFiltre())) {
+            counting = nouveauxCovid19List.stream()
+                    .collect(groupingBy(covid ->
+                            Pair.of(covid.getJour(), covid.getCl_age90()), summingInt(ClasseAgeCovid19::getRea)));
+        } else if ("hosp".equals(filtreCovid.getFiltre())) {
+            counting = nouveauxCovid19List.stream()
+                    .collect(groupingBy(covid ->
+                            Pair.of(covid.getJour(), covid.getCl_age90()), summingInt(ClasseAgeCovid19::getHosp)));
+        } else if ("dc".equals(filtreCovid.getFiltre())) {
+            counting = nouveauxCovid19List.stream()
+                    .collect(groupingBy(covid ->
+                            Pair.of(covid.getJour(), covid.getCl_age90()), summingInt(ClasseAgeCovid19::getDc)));
+        }
         return counting.entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
