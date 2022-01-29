@@ -1,11 +1,10 @@
 package fr.sacquet.covid.controller;
 
-import fr.sacquet.covid.model.fichier.ClasseAgeCovid19;
 import fr.sacquet.covid.model.form.FiltreCovid;
 import fr.sacquet.covid.model.rest.RootFichierCovid;
+import fr.sacquet.covid.model.rest.TrancheAge;
 import fr.sacquet.covid.services.CovidService;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,17 +52,17 @@ public class CovidController {
     }
 
     @GetMapping(value = PUBLIC_API + "/trancheAge/{filtre}/{dateMin}/{dateMax}/{region}")
-    public Map<Pair<String, String>, Integer> getHospitaliseByTrancheAge(FiltreCovid filtreCovid) {
+    public List<TrancheAge> getHospitaliseByTrancheAge(FiltreCovid filtreCovid) {
         return service.getDataClassAgeByFiltreCovid(filtreCovid);
     }
 
     @GetMapping(value = PUBLIC_API + "/hospitalise/{filtre}/trancheAge/byDate/{date}")
-    public Map<Pair<String, String>, Integer> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
+    public List<TrancheAge> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
         return service.getDataClassAgeByFiltreCovid(filtreCovid);
     }
 
     @GetMapping(value = PUBLIC_API + "/hospitalise/variation/{filtre}/trancheAge/byDate/{dateMin}/{dateMax}")
-    public Map<Pair<String, String>, Integer> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
+    public List<TrancheAge> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
         return service.getDataClassAgeByFiltreCovid(filtreCovid);
     }
 }

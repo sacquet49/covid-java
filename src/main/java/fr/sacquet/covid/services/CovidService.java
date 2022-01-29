@@ -8,7 +8,6 @@ import fr.sacquet.covid.model.rest.RootFichierCovid;
 import fr.sacquet.covid.model.rest.TrancheAge;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -70,18 +69,20 @@ public class CovidService {
             counting = nouveauxCovid19List.stream()
                     .collect(groupingBy(Covid19::getJour, summingInt(Covid19::getDc)));
         }
-        return counting.entrySet().stream().sorted(Map.Entry.comparingByKey())
+        return Objects.requireNonNull(counting)
+                .entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
-    public Map<Pair<String, String>, Integer> getDataClassAgeByFiltreCovid(FiltreCovid filtreCovid) {
+    public List<TrancheAge> getDataClassAgeByFiltreCovid(FiltreCovid filtreCovid) {
         ClasseAgeCovid19[] newCovidList = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
-        List<ClasseAgeCovid19> nouveauxCovid19List = Arrays.stream(newCovidList)
-                .filter(covid19 -> filterRegion(filtreCovid.getDepartement(), covid19) &&
-                        filterDate(filtreCovid, covid19.getJour())
-                ).toList();
+        List<ClasseAgeCovid19> nouveauxCovid19List = filterTrancheAge(filtreCovid, newCovidList);
+        Map<String, Integer> totalAgeByDate = getTotalAgeByDate(filtreCovid, newCovidList);
+        Map<String, TrancheAge> trancheAgesMap = trancheAges();
         Map<Pair<String, String>, Integer> counting = null;
+
         if ("rea".equals(filtreCovid.getFiltre())) {
             counting = nouveauxCovid19List.stream()
                     .collect(groupingBy(covid ->
@@ -95,9 +96,17 @@ public class CovidService {
                     .collect(groupingBy(covid ->
                             Pair.of(covid.getJour(), covid.getCl_age90()), summingInt(ClasseAgeCovid19::getDc)));
         }
-        return counting.entrySet().stream().sorted(Map.Entry.comparingByKey())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+
+        for (var entry : Objects.requireNonNull(counting).entrySet()) {
+            trancheAgesMap.get(entry.getKey().getValue()).getData()
+                    .put(entry.getKey().getKey(), entry.getValue());
+
+            int pourcentage = (entry.getValue() * 100) / totalAgeByDate.get(entry.getKey().getKey());
+            trancheAgesMap.get(entry.getKey().getValue()).getDataP()
+                    .put(entry.getKey().getKey(), pourcentage);
+        }
+
+        return new ArrayList(trancheAgesMap.values());
     }
 
     public List<ClasseAgeCovid19> getLabelsDayByDate() {
@@ -114,6 +123,33 @@ public class CovidService {
                         .isBefore(LocalDate.parse(filtreCovid.getDateMax(), formatter).plusDays(1)));
     }
 
+    private Map<String, Integer> getTotalAgeByDate(FiltreCovid filtreCovid, ClasseAgeCovid19[] newCovidList) {
+        List<ClasseAgeCovid19> nouveauxCovid19List = filterTrancheAge(filtreCovid, newCovidList);
+        Map<String, Integer> totalAgeByDate = null;
+        if ("rea".equals(filtreCovid.getFiltre())) {
+            totalAgeByDate = nouveauxCovid19List.stream()
+                    .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getRea)));
+        } else if ("hosp".equals(filtreCovid.getFiltre())) {
+            totalAgeByDate = nouveauxCovid19List.stream()
+                    .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getHosp)));
+        } else if ("dc".equals(filtreCovid.getFiltre())) {
+            totalAgeByDate = nouveauxCovid19List.stream()
+                    .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getDc)));
+        }
+        return Objects.requireNonNull(totalAgeByDate)
+                .entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+    }
+
+    private List<ClasseAgeCovid19> filterTrancheAge(FiltreCovid filtreCovid, ClasseAgeCovid19[] newCovidList) {
+        return Arrays.stream(newCovidList)
+                .filter(covid19 -> filterRegion(filtreCovid.getRegion(), covid19) &&
+                        filterDate(filtreCovid, covid19.getJour())
+                ).toList();
+    }
+
     private boolean filterSexe(String sexe, Covid19 covid19) {
         return sexe == null || sexe.equals(covid19.getSexe());
     }
@@ -126,18 +162,29 @@ public class CovidService {
         return region == null || region.equals(covid19.getReg());
     }
 
-    private List<TrancheAge> trancheAges() {
-        List<TrancheAge> trancheAges = new ArrayList<>();
-        trancheAges.add(TrancheAge.builder().indice("9").label("0 - 9").color("#0050ff").build());
-        trancheAges.add(TrancheAge.builder().indice("19").label("10 - 19").color("#ff00e5").build());
-        trancheAges.add(TrancheAge.builder().indice("29").label("20 - 29").color("#00f7ff").build());
-        trancheAges.add(TrancheAge.builder().indice("39").label("30 - 39").color("#6aff00").build());
-        trancheAges.add(TrancheAge.builder().indice("49").label("40 - 49").color("#ff0000").build());
-        trancheAges.add(TrancheAge.builder().indice("59").label("50 - 59").color("#ff7700").build());
-        trancheAges.add(TrancheAge.builder().indice("69").label("60 - 69").color("#9500ff").build());
-        trancheAges.add(TrancheAge.builder().indice("79").label("70 - 79").color("#d0ff00").build());
-        trancheAges.add(TrancheAge.builder().indice("89").label("80 - 89").color("#0b0b18").build());
-        trancheAges.add(TrancheAge.builder().indice("90").label(">90").color("#02a705").build());
+    private Map<String, TrancheAge> trancheAges() {
+        Map<String, TrancheAge> trancheAges = new HashMap<>();
+        trancheAges.put("9", TrancheAge.builder().indice("9").label("0 - 9").color("#0050ff")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
+        trancheAges.put("19", TrancheAge.builder().indice("19").label("10 - 19").color("#ff00e5")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
+        trancheAges.put("29", TrancheAge.builder().indice("29").label("20 - 29").color("#00f7ff")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
+        trancheAges.put("39", TrancheAge.builder().indice("39").label("30 - 39").color("#6aff00")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
+        trancheAges.put("49", TrancheAge.builder().indice("49").label("40 - 49").color("#ff0000")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
+        trancheAges.put("59", TrancheAge.builder().indice("59").label("50 - 59").color("#ff7700")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
+        trancheAges.put("69", TrancheAge.builder().indice("69").label("60 - 69").color("#9500ff")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
+        trancheAges.put("79", TrancheAge.builder().indice("79").label("70 - 79").color("#d0ff00")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
+        trancheAges.put("89", TrancheAge.builder().indice("89").label("80 - 89").color("#0b0b18")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
+        trancheAges.put("90", TrancheAge.builder().indice("90").label(">90").color("#02a705")
+                .data(new HashMap<>()).dataP(new HashMap<>()).build());
         return trancheAges;
     }
+
 }

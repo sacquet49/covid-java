@@ -4,7 +4,7 @@ import fr.sacquet.covid.model.fichier.ClasseAgeCovid19;
 import fr.sacquet.covid.model.fichier.Covid19;
 import fr.sacquet.covid.model.fichier.NouveauxCovid19;
 import fr.sacquet.covid.model.form.FiltreCovid;
-import org.apache.commons.lang3.tuple.Pair;
+import fr.sacquet.covid.model.rest.TrancheAge;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -184,10 +184,42 @@ class CovidServiceTest {
         when(fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class)).thenReturn(nouveauxCovid19Array);
 
         // When
-        Map<Pair<String, String>, Integer> result = covidService.getDataClassAgeByFiltreCovid(filtreCovid);
+        List<TrancheAge> result = covidService.getDataClassAgeByFiltreCovid(filtreCovid);
 
         // Then
-        result.forEach((key, value) -> System.out.println(key + " : " + value));
+        for (TrancheAge tranche : result) {
+            if (tranche.getIndice().equals("9")) {
+                assertEquals(tranche.getData().size(), 2);
+                assertEquals(tranche.getData().get("2022-10-10"), 96);
+                assertEquals(tranche.getData().get("2022-11-10"), 41);
+            }
+        }
+    }
+
+    @Test
+    void getDataClassAgeByFiltreCovid_hosp_date_reg() {
+        // Setup
+        List<ClasseAgeCovid19> covid19List = getCovid19Class();
+        ClasseAgeCovid19[] nouveauxCovid19Array = covid19List.toArray(new ClasseAgeCovid19[0]);
+        FiltreCovid filtreCovid = FiltreCovid.builder()
+                .filtre("hosp").region("49")
+                .dateMin("2022-10-10").dateMax("2022-11-10")
+                .build();
+
+        // Given
+        when(fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class)).thenReturn(nouveauxCovid19Array);
+
+        // When
+        List<TrancheAge> result = covidService.getDataClassAgeByFiltreCovid(filtreCovid);
+
+        // Then
+        for (TrancheAge tranche : result) {
+            if (tranche.getIndice().equals("9")) {
+                assertEquals(tranche.getData().size(), 2);
+                assertEquals(tranche.getData().get("2022-10-10"), 31);
+                assertEquals(tranche.getData().get("2022-11-10"), 41);
+            }
+        }
     }
 
     private List<Covid19> getCovid19s() {

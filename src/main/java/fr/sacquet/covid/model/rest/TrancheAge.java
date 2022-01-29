@@ -2,7 +2,7 @@ package fr.sacquet.covid.model.rest;
 
 import lombok.*;
 
-import java.util.List;
+import java.util.Map;
 
 @Value
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
@@ -12,6 +12,6 @@ public class TrancheAge {
     String indice;
     String label;
     String color;
-    List<Integer> data;
-    List<Integer> dataP;
+    Map<String, Integer> data;
+    Map<String, Integer> dataP;
 }
