@@ -98,12 +98,14 @@ public class CovidService {
         }
 
         for (var entry : Objects.requireNonNull(counting).entrySet()) {
-            trancheAgesMap.get(entry.getKey().getValue()).getData()
-                    .put(entry.getKey().getKey(), entry.getValue());
+            if(!"0".equalsIgnoreCase(entry.getKey().getValue())) {
+                trancheAgesMap.get(entry.getKey().getValue()).getData()
+                        .put(entry.getKey().getKey(), entry.getValue());
 
-            int pourcentage = (entry.getValue() * 100) / totalAgeByDate.get(entry.getKey().getKey());
-            trancheAgesMap.get(entry.getKey().getValue()).getDataP()
-                    .put(entry.getKey().getKey(), pourcentage);
+                int pourcentage = (entry.getValue() * 100) / totalAgeByDate.get(entry.getKey().getKey());
+                trancheAgesMap.get(entry.getKey().getValue()).getDataP()
+                        .put(entry.getKey().getKey(), pourcentage);
+            }
         }
 
         return new ArrayList(trancheAgesMap.values());
@@ -166,14 +168,18 @@ public class CovidService {
 
     private boolean filterDate(String date, String jour) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return date == null
+        return date == null || "undefined".equals(date)
+                || "null".equals(date)
                 || LocalDate.parse(jour, formatter)
                 .equals(LocalDate.parse(date, formatter).plusDays(-1));
     }
 
     private boolean filterDateMinMax(FiltreCovid filtreCovid, String jour) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return (filtreCovid.getDateMin() == null || filtreCovid.getDateMax() == null)
+        return (filtreCovid.getDateMin() == null || filtreCovid.getDateMax() == null
+                || "undefined".equals(filtreCovid.getDateMin())
+                || "null".equals(filtreCovid.getDateMin()) || "undefined".equals(filtreCovid.getDateMax())
+                || "null".equals(filtreCovid.getDateMax()))
                 || (LocalDate.parse(jour, formatter)
                 .isAfter(LocalDate.parse(filtreCovid.getDateMin(), formatter).plusDays(-1)) &&
                 LocalDate.parse(jour, formatter)
@@ -208,20 +214,23 @@ public class CovidService {
     }
 
     private boolean filterSexe(String sexe, Covid19 covid19) {
-        return sexe == null || sexe.equals(covid19.getSexe());
+        return sexe == null || "undefined".equals(sexe)
+                || "null".equals(sexe) || sexe.equals(covid19.getSexe());
     }
 
     private boolean filterDepartement(String departement, Covid19 covid19) {
-        return departement == null || departement.equals(covid19.getDep());
+        return departement == null || "undefined".equals(departement)
+                || "null".equals(departement) || departement.equals(covid19.getDep());
     }
 
     private boolean filterRegion(String region, ClasseAgeCovid19 covid19) {
-        return region == null || region.equals(covid19.getReg());
+        return region == null || "undefined".equals(region)
+                || "null".equals(region) || region.equals(covid19.getReg());
     }
 
     private Map<String, TrancheAge> trancheAges() {
         Map<String, TrancheAge> trancheAges = new HashMap<>();
-        trancheAges.put("9", TrancheAge.builder().indice("9").label("0 - 9").color("#0050ff")
+        trancheAges.put("09", TrancheAge.builder().indice("9").label("0 - 9").color("#0050ff")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
         trancheAges.put("19", TrancheAge.builder().indice("19").label("10 - 19").color("#ff00e5")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());

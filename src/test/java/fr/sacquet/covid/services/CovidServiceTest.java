@@ -144,6 +144,50 @@ class CovidServiceTest {
     }
 
     @Test
+    void getDataByTypeAndSexAndDepartement_hosp_tous_departement_null() {
+        // Setup
+        List<Covid19> covid19List = getCovid19s();
+        Covid19[] nouveauxCovid19Array = covid19List.toArray(new Covid19[0]);
+        FiltreCovid filtreCovid = FiltreCovid.builder()
+                .filtre("hosp").sex("0").departement("49")
+                .dateMin("null").dateMax("null")
+                .build();
+
+        // Given
+        when(fileService.readJsonFile(HOSP, Covid19[].class)).thenReturn(nouveauxCovid19Array);
+
+        // When
+        Map<String, Integer> result = covidService.getDataHospByFiltreCovid(filtreCovid);
+
+        // Then
+        assertEquals(6, result.get("2022-10-10"));
+        assertEquals(31, result.get("2022-11-10"));
+        assertEquals(7, result.get("2022-12-10"));
+    }
+
+    @Test
+    void getDataByTypeAndSexAndDepartement_hosp_tous_departement_undefined() {
+        // Setup
+        List<Covid19> covid19List = getCovid19s();
+        Covid19[] nouveauxCovid19Array = covid19List.toArray(new Covid19[0]);
+        FiltreCovid filtreCovid = FiltreCovid.builder()
+                .filtre("hosp").sex("0").departement("49")
+                .dateMin("undefined").dateMax("undefined")
+                .build();
+
+        // Given
+        when(fileService.readJsonFile(HOSP, Covid19[].class)).thenReturn(nouveauxCovid19Array);
+
+        // When
+        Map<String, Integer> result = covidService.getDataHospByFiltreCovid(filtreCovid);
+
+        // Then
+        assertEquals(6, result.get("2022-10-10"));
+        assertEquals(31, result.get("2022-11-10"));
+        assertEquals(7, result.get("2022-12-10"));
+    }
+
+    @Test
     void getDataByTypeAndSexAndDepartement_hosp_tous_departement_date() {
         // Setup
         List<Covid19> covid19List = getCovid19s();
@@ -279,20 +323,20 @@ class CovidServiceTest {
 
     private List<ClasseAgeCovid19> getCovid19Class() {
         List<ClasseAgeCovid19> covid19List = new ArrayList<>();
-        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(9).rea(18).reg("49").cl_age90("9").build());
-        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(12).rea(14).reg("49").cl_age90("9").build());
+        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(9).rea(18).reg("49").cl_age90("09").build());
+        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(12).rea(14).reg("49").cl_age90("09").build());
         covid19List.add(ClasseAgeCovid19.builder().jour("2022-11-10").hosp(13).rea(21).reg("49").cl_age90("19").build());
         covid19List.add(ClasseAgeCovid19.builder().jour("2022-11-10").hosp(50).rea(24).reg("49").cl_age90("29").build());
-        covid19List.add(ClasseAgeCovid19.builder().jour("2022-11-10").hosp(10).rea(25).reg("49").cl_age90("9").build());
+        covid19List.add(ClasseAgeCovid19.builder().jour("2022-11-10").hosp(10).rea(25).reg("49").cl_age90("09").build());
         covid19List.add(ClasseAgeCovid19.builder().jour("2022-11-10").hosp(18).rea(20).reg("44").cl_age90("39").build());
-        covid19List.add(ClasseAgeCovid19.builder().jour("2022-11-10").hosp(31).rea(16).reg("49").cl_age90("9").build());
-        covid19List.add(ClasseAgeCovid19.builder().jour("2022-12-10").hosp(8).rea(19).reg("49").cl_age90("9").build());
-        covid19List.add(ClasseAgeCovid19.builder().jour("2022-12-10").hosp(7).rea(31).reg("49").cl_age90("9").build());
+        covid19List.add(ClasseAgeCovid19.builder().jour("2022-11-10").hosp(31).rea(16).reg("49").cl_age90("09").build());
+        covid19List.add(ClasseAgeCovid19.builder().jour("2022-12-10").hosp(8).rea(19).reg("49").cl_age90("09").build());
+        covid19List.add(ClasseAgeCovid19.builder().jour("2022-12-10").hosp(7).rea(31).reg("49").cl_age90("09").build());
         covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(9).rea(35).reg("49").cl_age90("49").build());
-        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(65).rea(33).reg("44").cl_age90("9").build());
-        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(4).rea(39).reg("49").cl_age90("9").build());
+        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(65).rea(33).reg("44").cl_age90("09").build());
+        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(4).rea(39).reg("49").cl_age90("09").build());
         covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(2).rea(5).reg("49").cl_age90("89").build());
-        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(6).rea(4).reg("49").cl_age90("9").build());
+        covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(6).rea(4).reg("49").cl_age90("09").build());
         return covid19List;
     }
 
