@@ -42,13 +42,13 @@ public class CovidController {
     }
 
     @GetMapping(value = PUBLIC_API + "/labelsDay")
-    public Map<String, Integer> getLabelsDay() {
-        return service.getDecesByDay();
+    public List<String> getLabelsDay() {
+        return service.getLabelsDay();
     }
 
     @GetMapping(value = PUBLIC_API + "/labelsDay/ByDate/{dateMin}/{dateMax}")
-    public Map<String, Integer> getLabelsDayByDate(FiltreCovid filtreCovid) {
-        return service.getDecesByDay();
+    public List<String> getLabelsDayByDate(FiltreCovid filtreCovid) {
+        return service.getLabelsDayByDate(filtreCovid);
     }
 
     @GetMapping(value = PUBLIC_API + "/trancheAge/{filtre}/{dateMin}/{dateMax}/{region}")
@@ -57,12 +57,12 @@ public class CovidController {
     }
 
     @GetMapping(value = PUBLIC_API + "/hospitalise/{filtre}/trancheAge/byDate/{date}")
-    public List<TrancheAge> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
-        return service.getDataClassAgeByFiltreCovid(filtreCovid);
+    public Map<String, Integer> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
+        return service.getHospitaliseTrancheAgeByDate(filtreCovid);
     }
 
     @GetMapping(value = PUBLIC_API + "/hospitalise/variation/{filtre}/trancheAge/byDate/{dateMin}/{dateMax}")
-    public List<TrancheAge> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
-        return service.getDataClassAgeByFiltreCovid(filtreCovid);
+    public Map<String, Integer> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
+        return service.getHospitaliseVariationTrancheAgeByDate(filtreCovid);
     }
 }

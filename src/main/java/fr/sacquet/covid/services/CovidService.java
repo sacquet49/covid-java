@@ -56,7 +56,7 @@ public class CovidService {
         List<Covid19> nouveauxCovid19List = Arrays.stream(newCovidList)
                 .filter(covid19 -> filterSexe(filtreCovid.getSex(), covid19) &&
                         filterDepartement(filtreCovid.getDepartement(), covid19) &&
-                        filterDate(filtreCovid, covid19.getJour())
+                        filterDateMinMax(filtreCovid, covid19.getJour())
                 ).toList();
         Map<String, Integer> counting = null;
         if ("rea".equals(filtreCovid.getFiltre())) {
@@ -109,12 +109,69 @@ public class CovidService {
         return new ArrayList(trancheAgesMap.values());
     }
 
-    public List<ClasseAgeCovid19> getLabelsDayByDate() {
-        ClasseAgeCovid19[] classAge = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
-        return Arrays.asList(classAge);
+    public Map<String, Integer> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
+        return getHospByFilterAndDate(filtreCovid, filtreCovid.getDate());
     }
 
-    private boolean filterDate(FiltreCovid filtreCovid, String jour) {
+    public Map<String, Integer> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
+        Map<String, Integer> returnData = new HashMap<>();
+        Map<String, Integer> dataRea = getHospByFilterAndDate(filtreCovid, filtreCovid.getDateMin());
+        Map<String, Integer> dataRea2 = getHospByFilterAndDate(filtreCovid, filtreCovid.getDateMax());
+        for (String key : dataRea.keySet()) {
+            int variation = 100 * (dataRea2.get(key) - dataRea.get(key)) / dataRea2.get(key);
+            returnData.put(key, variation);
+        }
+        return returnData;
+    }
+
+    public List<String> getLabelsDay() {
+        NouveauxCovid19[] newCovidList = fileService.readJsonFile(NEW_HOSP, NouveauxCovid19[].class);
+        return Arrays.stream(newCovidList)
+                .map(NouveauxCovid19::getJour)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getLabelsDayByDate(FiltreCovid filtreCovid) {
+        ClasseAgeCovid19[] newCovidList = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
+        return Arrays.stream(newCovidList)
+                .map(ClasseAgeCovid19::getJour)
+                .distinct()
+                .filter(jour -> filterDateMinMax(filtreCovid, jour))
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, Integer> getHospByFilterAndDate(FiltreCovid filtreCovid, String date) {
+        ClasseAgeCovid19[] newCovidList = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
+        List<ClasseAgeCovid19> nouveauxCovid19List = Arrays.stream(newCovidList)
+                .filter(covid19 -> filterDate(date, covid19.getJour())
+                ).toList();
+        Map<String, Integer> counting = null;
+
+        if ("rea".equals(filtreCovid.getFiltre())) {
+            counting = nouveauxCovid19List.stream()
+                    .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getRea)));
+        } else if ("hosp".equals(filtreCovid.getFiltre())) {
+            counting = nouveauxCovid19List.stream()
+                    .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getRea)));
+        } else if ("dc".equals(filtreCovid.getFiltre())) {
+            counting = nouveauxCovid19List.stream()
+                    .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getRea)));
+        }
+
+        return counting;
+    }
+
+    private boolean filterDate(String date, String jour) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return date == null
+                || LocalDate.parse(jour, formatter)
+                .equals(LocalDate.parse(date, formatter).plusDays(-1));
+    }
+
+    private boolean filterDateMinMax(FiltreCovid filtreCovid, String jour) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return (filtreCovid.getDateMin() == null || filtreCovid.getDateMax() == null)
                 || (LocalDate.parse(jour, formatter)
@@ -146,7 +203,7 @@ public class CovidService {
     private List<ClasseAgeCovid19> filterTrancheAge(FiltreCovid filtreCovid, ClasseAgeCovid19[] newCovidList) {
         return Arrays.stream(newCovidList)
                 .filter(covid19 -> filterRegion(filtreCovid.getRegion(), covid19) &&
-                        filterDate(filtreCovid, covid19.getJour())
+                        filterDateMinMax(filtreCovid, covid19.getJour())
                 ).toList();
     }
 
@@ -186,5 +243,4 @@ public class CovidService {
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
         return trancheAges;
     }
-
 }

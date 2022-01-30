@@ -33,12 +33,7 @@ class CovidServiceTest {
     @Test
     void getDecesByDay() {
         // Setup
-        List<NouveauxCovid19> covid19List = new ArrayList<>();
-        covid19List.add(NouveauxCovid19.builder().jour("2022-10-10").incid_dc(9).build());
-        covid19List.add(NouveauxCovid19.builder().jour("2022-10-10").incid_dc(15).build());
-        covid19List.add(NouveauxCovid19.builder().jour("2022-11-10").incid_dc(30).build());
-        covid19List.add(NouveauxCovid19.builder().jour("2022-12-10").incid_dc(5).build());
-        covid19List.add(NouveauxCovid19.builder().jour("2022-10-10").incid_dc(5).build());
+        List<NouveauxCovid19> covid19List = getNouveauxCovid19s();
         NouveauxCovid19[] nouveauxCovid19Array = covid19List.toArray(new NouveauxCovid19[0]);
 
         // Given
@@ -222,6 +217,47 @@ class CovidServiceTest {
         }
     }
 
+    @Test
+    void getLabelsDay() {
+        // Setup
+        List<NouveauxCovid19> covid19List = getNouveauxCovid19s();
+        NouveauxCovid19[] nouveauxCovid19Array = covid19List.toArray(new NouveauxCovid19[0]);
+
+        // Given
+        when(fileService.readJsonFile(NEW_HOSP, NouveauxCovid19[].class)).thenReturn(nouveauxCovid19Array);
+
+        // When
+        List<String> result = covidService.getLabelsDay();
+
+        // Then
+        assertEquals(3, result.size());
+        assertEquals("2022-10-10", result.get(0));
+        assertEquals("2022-11-10", result.get(1));
+        assertEquals("2022-12-10", result.get(2));
+    }
+
+    @Test
+    void getLabelsDayByDate() {
+        // Setup
+        List<ClasseAgeCovid19> covid19List = getCovid19Class();
+        ClasseAgeCovid19[] nouveauxCovid19Array = covid19List.toArray(new ClasseAgeCovid19[0]);
+        FiltreCovid filtreCovid = FiltreCovid.builder()
+                .dateMin("2022-10-10").dateMax("2022-11-10")
+                .build();
+
+        // Given
+        when(fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class)).thenReturn(nouveauxCovid19Array);
+
+        // When
+        List<String> result = covidService.getLabelsDayByDate(filtreCovid);
+
+        // Then
+        assertEquals(2, result.size());
+        assertEquals("2022-10-10", result.get(0));
+        assertEquals("2022-11-10", result.get(1));
+
+    }
+
     private List<Covid19> getCovid19s() {
         List<Covid19> covid19List = new ArrayList<>();
         covid19List.add(Covid19.builder().jour("2022-10-10").hosp(9).rea(18).sexe("1").dep("49").build());
@@ -257,6 +293,16 @@ class CovidServiceTest {
         covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(4).rea(39).reg("49").cl_age90("9").build());
         covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(2).rea(5).reg("49").cl_age90("89").build());
         covid19List.add(ClasseAgeCovid19.builder().jour("2022-10-10").hosp(6).rea(4).reg("49").cl_age90("9").build());
+        return covid19List;
+    }
+
+    private List<NouveauxCovid19> getNouveauxCovid19s() {
+        List<NouveauxCovid19> covid19List = new ArrayList<>();
+        covid19List.add(NouveauxCovid19.builder().jour("2022-10-10").incid_dc(9).build());
+        covid19List.add(NouveauxCovid19.builder().jour("2022-10-10").incid_dc(15).build());
+        covid19List.add(NouveauxCovid19.builder().jour("2022-11-10").incid_dc(30).build());
+        covid19List.add(NouveauxCovid19.builder().jour("2022-12-10").incid_dc(5).build());
+        covid19List.add(NouveauxCovid19.builder().jour("2022-10-10").incid_dc(5).build());
         return covid19List;
     }
 }
