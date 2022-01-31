@@ -80,8 +80,8 @@ public class CovidService {
         ClasseAgeCovid19[] newCovidList = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
         List<ClasseAgeCovid19> nouveauxCovid19List = filterTrancheAge(filtreCovid, newCovidList);
         Map<String, Integer> totalAgeByDate = getTotalAgeByDate(filtreCovid, newCovidList);
-        Map<String, TrancheAge> trancheAgesMap = trancheAges();
-        Map<Pair<String, String>, Integer> counting = null;
+        Map<Integer, TrancheAge> trancheAgesMap = trancheAges();
+        Map<Pair<String, Integer>, Integer> counting = null;
 
         if ("rea".equals(filtreCovid.getFiltre())) {
             counting = nouveauxCovid19List.stream()
@@ -98,7 +98,7 @@ public class CovidService {
         }
 
         for (var entry : Objects.requireNonNull(counting).entrySet()) {
-            if(!"0".equalsIgnoreCase(entry.getKey().getValue())) {
+            if (entry.getKey().getValue() != 0) {
                 trancheAgesMap.get(entry.getKey().getValue()).getData()
                         .put(entry.getKey().getKey(), entry.getValue());
 
@@ -111,15 +111,15 @@ public class CovidService {
         return new ArrayList(trancheAgesMap.values());
     }
 
-    public Map<String, Integer> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
+    public Map<Integer, Integer> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
         return getHospByFilterAndDate(filtreCovid, filtreCovid.getDate());
     }
 
-    public Map<String, Integer> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
-        Map<String, Integer> returnData = new HashMap<>();
-        Map<String, Integer> dataRea = getHospByFilterAndDate(filtreCovid, filtreCovid.getDateMin());
-        Map<String, Integer> dataRea2 = getHospByFilterAndDate(filtreCovid, filtreCovid.getDateMax());
-        for (String key : dataRea.keySet()) {
+    public Map<Integer, Integer> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
+        Map<Integer, Integer> returnData = new HashMap<>();
+        Map<Integer, Integer> dataRea = getHospByFilterAndDate(filtreCovid, filtreCovid.getDateMin());
+        Map<Integer, Integer> dataRea2 = getHospByFilterAndDate(filtreCovid, filtreCovid.getDateMax());
+        for (Integer key : dataRea.keySet()) {
             int variation = 100 * (dataRea2.get(key) - dataRea.get(key)) / dataRea2.get(key);
             returnData.put(key, variation);
         }
@@ -145,25 +145,30 @@ public class CovidService {
                 .collect(Collectors.toList());
     }
 
-    private Map<String, Integer> getHospByFilterAndDate(FiltreCovid filtreCovid, String date) {
+    private Map<Integer, Integer> getHospByFilterAndDate(FiltreCovid filtreCovid, String date) {
         ClasseAgeCovid19[] newCovidList = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
         List<ClasseAgeCovid19> nouveauxCovid19List = Arrays.stream(newCovidList)
                 .filter(covid19 -> filterDate(date, covid19.getJour())
                 ).toList();
-        Map<String, Integer> counting = null;
+        Map<Integer, Integer> counting = null;
 
         if ("rea".equals(filtreCovid.getFiltre())) {
             counting = nouveauxCovid19List.stream()
-                    .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getRea)));
+                    .collect(groupingBy(ClasseAgeCovid19::getCl_age90, summingInt(ClasseAgeCovid19::getRea)));
         } else if ("hosp".equals(filtreCovid.getFiltre())) {
             counting = nouveauxCovid19List.stream()
-                    .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getRea)));
+                    .collect(groupingBy(ClasseAgeCovid19::getCl_age90, summingInt(ClasseAgeCovid19::getHosp)));
         } else if ("dc".equals(filtreCovid.getFiltre())) {
             counting = nouveauxCovid19List.stream()
-                    .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getRea)));
+                    .collect(groupingBy(ClasseAgeCovid19::getCl_age90, summingInt(ClasseAgeCovid19::getDc)));
         }
+        counting.remove(0);
 
-        return counting;
+        return Objects.requireNonNull(counting)
+                .entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
     private boolean filterDate(String date, String jour) {
@@ -171,7 +176,7 @@ public class CovidService {
         return date == null || "undefined".equals(date)
                 || "null".equals(date)
                 || LocalDate.parse(jour, formatter)
-                .equals(LocalDate.parse(date, formatter).plusDays(-1));
+                .equals(LocalDate.parse(date, formatter));
     }
 
     private boolean filterDateMinMax(FiltreCovid filtreCovid, String jour) {
@@ -228,27 +233,27 @@ public class CovidService {
                 || "null".equals(region) || region.equals(covid19.getReg());
     }
 
-    private Map<String, TrancheAge> trancheAges() {
-        Map<String, TrancheAge> trancheAges = new HashMap<>();
-        trancheAges.put("09", TrancheAge.builder().indice("9").label("0 - 9").color("#0050ff")
+    private Map<Integer, TrancheAge> trancheAges() {
+        Map<Integer, TrancheAge> trancheAges = new HashMap<>();
+        trancheAges.put(9, TrancheAge.builder().indice("9").label("0 - 9").color("#0050ff")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
-        trancheAges.put("19", TrancheAge.builder().indice("19").label("10 - 19").color("#ff00e5")
+        trancheAges.put(19, TrancheAge.builder().indice("19").label("10 - 19").color("#ff00e5")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
-        trancheAges.put("29", TrancheAge.builder().indice("29").label("20 - 29").color("#00f7ff")
+        trancheAges.put(29, TrancheAge.builder().indice("29").label("20 - 29").color("#00f7ff")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
-        trancheAges.put("39", TrancheAge.builder().indice("39").label("30 - 39").color("#6aff00")
+        trancheAges.put(39, TrancheAge.builder().indice("39").label("30 - 39").color("#6aff00")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
-        trancheAges.put("49", TrancheAge.builder().indice("49").label("40 - 49").color("#ff0000")
+        trancheAges.put(49, TrancheAge.builder().indice("49").label("40 - 49").color("#ff0000")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
-        trancheAges.put("59", TrancheAge.builder().indice("59").label("50 - 59").color("#ff7700")
+        trancheAges.put(59, TrancheAge.builder().indice("59").label("50 - 59").color("#ff7700")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
-        trancheAges.put("69", TrancheAge.builder().indice("69").label("60 - 69").color("#9500ff")
+        trancheAges.put(69, TrancheAge.builder().indice("69").label("60 - 69").color("#9500ff")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
-        trancheAges.put("79", TrancheAge.builder().indice("79").label("70 - 79").color("#d0ff00")
+        trancheAges.put(79, TrancheAge.builder().indice("79").label("70 - 79").color("#d0ff00")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
-        trancheAges.put("89", TrancheAge.builder().indice("89").label("80 - 89").color("#0b0b18")
+        trancheAges.put(89, TrancheAge.builder().indice("89").label("80 - 89").color("#0b0b18")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
-        trancheAges.put("90", TrancheAge.builder().indice("90").label(">90").color("#02a705")
+        trancheAges.put(90, TrancheAge.builder().indice("90").label(">90").color("#02a705")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
         return trancheAges;
     }

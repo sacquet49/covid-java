@@ -57,12 +57,12 @@ public class CovidController {
     }
 
     @GetMapping(value = PUBLIC_API + "/hospitalise/{filtre}/trancheAge/byDate/{date}")
-    public Map<String, Integer> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
+    public Map<Integer, Integer> getHospitaliseTrancheAgeByDate(FiltreCovid filtreCovid) {
         return service.getHospitaliseTrancheAgeByDate(filtreCovid);
     }
 
     @GetMapping(value = PUBLIC_API + "/hospitalise/variation/{filtre}/trancheAge/byDate/{dateMin}/{dateMax}")
-    public Map<String, Integer> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
+    public Map<Integer, Integer> getHospitaliseVariationTrancheAgeByDate(FiltreCovid filtreCovid) {
         return service.getHospitaliseVariationTrancheAgeByDate(filtreCovid);
     }
 }

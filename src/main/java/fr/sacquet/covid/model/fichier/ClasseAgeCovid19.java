@@ -8,7 +8,7 @@ import lombok.*;
 @Builder
 public class ClasseAgeCovid19 {
     String reg;
-    String cl_age90;
+    int cl_age90;
     String jour;
     int hosp;
     int rea;
