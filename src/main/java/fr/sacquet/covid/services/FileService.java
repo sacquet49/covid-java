@@ -12,10 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static fr.sacquet.covid.model.FileName.HOSP;
 
@@ -28,6 +25,8 @@ public class FileService {
 
     @Value("${path.file}")
     private String pathFile;
+
+    private Map<String, Object> cacheMap = new HashMap<>();
 
     private static final String JSON = ".json";
 
@@ -69,8 +68,13 @@ public class FileService {
 
     public <T> T readJsonFile(String fileName, Class<T> className) {
         try {
-            File targetFile = new File(pathFile + fileName + JSON);
-            return objectMapper.readValue(targetFile, className);
+            if(cacheMap.get(fileName) == null) {
+                File targetFile = new File(pathFile + fileName + JSON);
+                cacheMap.put(fileName, objectMapper.readValue(targetFile, className));
+                return objectMapper.readValue(targetFile, className);
+            } else {
+               return (T) cacheMap.get(fileName);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             log.error("Erreur lecture du fichier " + HOSP);
