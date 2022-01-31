@@ -66,6 +66,10 @@ public class FileService {
         }
     }
 
+    public void resetCache() {
+        cacheMap = new HashMap<>();
+    }
+
     public <T> T readJsonFile(String fileName, Class<T> className) {
         try {
             if(cacheMap.get(fileName) == null) {

@@ -42,6 +42,7 @@ public class CovidService {
 
     @Scheduled(cron = "0 0 23 * * ?", zone = "Europe/Paris")
     public RootFichierCovid getAllCsv() {
+        fileService.resetCache();
         String url = "https://www.data.gouv.fr/api/2/datasets/5e7e104ace2080d9162b61d8/resources/";
         ResponseEntity<RootFichierCovid> response = restTemplate.getForEntity(url, RootFichierCovid.class);
         RootFichierCovid rootFichierCovid = response.getBody();
