@@ -10,9 +10,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -23,6 +26,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.summingInt;
 
 @Service
+@EnableScheduling
 @AllArgsConstructor
 @Log4j2
 public class CovidService {
@@ -31,6 +35,12 @@ public class CovidService {
 
     private FileService fileService;
 
+    @PostConstruct
+    public void init(){
+        getAllCsv();
+    }
+
+    @Scheduled(cron = "0 0 23 * * ?", zone = "Europe/Paris")
     public RootFichierCovid getAllCsv() {
         String url = "https://www.data.gouv.fr/api/2/datasets/5e7e104ace2080d9162b61d8/resources/";
         ResponseEntity<RootFichierCovid> response = restTemplate.getForEntity(url, RootFichierCovid.class);
