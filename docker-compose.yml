@@ -2,7 +2,7 @@ version: '3.7'
 services:
     covid-web:
       container_name: covid-web
-      build: covid_web
+      build: ./
       volumes:
         - ./:/usr/src
 

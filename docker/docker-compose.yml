@@ -1,0 +1,10 @@
+version: '3.7'
+services:
+    covid-web:
+        container_name: covid-web_run
+        build: covid_app
+        restart: on-failure
+        volumes:
+            - ./covid_app/jar:/root/jar
+        ports:
+            - "3000:3000"
