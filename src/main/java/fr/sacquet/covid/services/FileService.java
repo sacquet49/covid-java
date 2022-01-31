@@ -2,8 +2,9 @@ package fr.sacquet.covid.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.sacquet.covid.model.rest.FichierCovid;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedInputStream;
@@ -19,11 +20,14 @@ import java.util.Map;
 import static fr.sacquet.covid.model.FileName.HOSP;
 
 @Service
-@AllArgsConstructor
 @Log4j2
 public class FileService {
 
+    @Autowired
     private ObjectMapper objectMapper;
+
+    @Value("${path.file}")
+    private String pathFile;
 
     private static final String JSON = ".json";
 
@@ -34,7 +38,7 @@ public class FileService {
             InputStream in = new BufferedInputStream(url.openStream());
             String nomFichier = file.getTitle().substring(0, file.getTitle().length() - 21);
             log.info(nomFichier);
-            File targetFile = new File("F://covidFile//" + nomFichier + ".json");
+            File targetFile = new File(pathFile + nomFichier + JSON);
             convertCsvToJson(in, targetFile);
         } catch (IOException e) {
             e.printStackTrace();
@@ -65,7 +69,7 @@ public class FileService {
 
     public <T> T readJsonFile(String fileName, Class<T> className) {
         try {
-            File targetFile = new File("F://covidFile//" + fileName + JSON);
+            File targetFile = new File(pathFile + fileName + JSON);
             return objectMapper.readValue(targetFile, className);
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,0 +1,7 @@
+*.log
+*.csv
+*.json
+*.py
+*.sh
+*.jar
+mapping

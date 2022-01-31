@@ -36,7 +36,7 @@ public class CovidService {
     private FileService fileService;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         getAllCsv();
     }
 
