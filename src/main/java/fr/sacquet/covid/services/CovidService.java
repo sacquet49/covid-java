@@ -7,7 +7,7 @@ import fr.sacquet.covid.model.form.FiltreCovid;
 import fr.sacquet.covid.model.rest.RootFichierCovid;
 import fr.sacquet.covid.model.rest.TrancheAge;
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -28,7 +28,6 @@ import static java.util.stream.Collectors.summingInt;
 @Service
 @EnableScheduling
 @AllArgsConstructor
-@Log4j2
 public class CovidService {
 
     private RestTemplate restTemplate;
@@ -47,41 +46,45 @@ public class CovidService {
         ResponseEntity<RootFichierCovid> response = restTemplate.getForEntity(url, RootFichierCovid.class);
         RootFichierCovid rootFichierCovid = response.getBody();
         rootFichierCovid.getData()
-                .stream().filter(file -> !file.getTitle().contains("metadonnees"))
+                .parallelStream().filter(file -> !file.getTitle().contains("metadonnees"))
                 .forEach(file -> fileService.saveFile(file));
+        fileService.readJsonFile(HOSP, Covid19[].class);
+        fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
+        fileService.readJsonFile(NEW_HOSP, NouveauxCovid19[].class);
         return response.getBody();
     }
 
     public Map<String, Integer> getDecesByDay() {
         NouveauxCovid19[] newCovidList = fileService.readJsonFile(NEW_HOSP, NouveauxCovid19[].class);
         List<NouveauxCovid19> nouveauxCovid19List = Arrays.asList(newCovidList);
-        return nouveauxCovid19List.stream()
+        return nouveauxCovid19List.parallelStream()
                 .collect(groupingBy(NouveauxCovid19::getJour, summingInt(NouveauxCovid19::getIncid_dc)))
-                .entrySet().stream().sorted(Map.Entry.comparingByKey())
+                .entrySet().parallelStream().sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
     public Map<String, Integer> getDataHospByFiltreCovid(FiltreCovid filtreCovid) {
         Covid19[] newCovidList = fileService.readJsonFile(HOSP, Covid19[].class);
-        List<Covid19> nouveauxCovid19List = Arrays.stream(newCovidList)
-                .filter(covid19 -> filterSexe(filtreCovid.getSex(), covid19) &&
-                        filterDepartement(filtreCovid.getDepartement(), covid19) &&
-                        filterDateMinMax(filtreCovid, covid19.getJour())
-                ).toList();
+        List<Covid19> List = Arrays.asList(newCovidList);
+        List<Covid19> nouveauxCovid19List = List.parallelStream()
+                .filter(covid19 -> filterSexe(filtreCovid.getSex(), covid19))
+                .filter(covid19 -> filterDateMinMax(filtreCovid, covid19.getJour()))
+                .filter(covid19 -> filterDepartement(filtreCovid.getDepartement(), covid19))
+                .toList();
         Map<String, Integer> counting = null;
         if ("rea".equals(filtreCovid.getFiltre())) {
-            counting = nouveauxCovid19List.stream()
+            counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(Covid19::getJour, summingInt(Covid19::getRea)));
         } else if ("hosp".equals(filtreCovid.getFiltre())) {
-            counting = nouveauxCovid19List.stream()
+            counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(Covid19::getJour, summingInt(Covid19::getHosp)));
         } else if ("dc".equals(filtreCovid.getFiltre())) {
-            counting = nouveauxCovid19List.stream()
+            counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(Covid19::getJour, summingInt(Covid19::getDc)));
         }
         return Objects.requireNonNull(counting)
-                .entrySet().stream()
+                .entrySet().parallelStream()
                 .sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
@@ -90,20 +93,20 @@ public class CovidService {
     public List<TrancheAge> getDataClassAgeByFiltreCovid(FiltreCovid filtreCovid) {
         ClasseAgeCovid19[] newCovidList = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
         List<ClasseAgeCovid19> nouveauxCovid19List = filterTrancheAge(filtreCovid, newCovidList);
-        Map<String, Integer> totalAgeByDate = getTotalAgeByDate(filtreCovid, newCovidList);
+        Map<String, Integer> totalAgeByDate = getTotalAgeByDate(filtreCovid, nouveauxCovid19List);
         Map<Integer, TrancheAge> trancheAgesMap = trancheAges();
         Map<Pair<String, Integer>, Integer> counting = null;
 
         if ("rea".equals(filtreCovid.getFiltre())) {
-            counting = nouveauxCovid19List.stream()
+            counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(covid ->
                             Pair.of(covid.getJour(), covid.getCl_age90()), summingInt(ClasseAgeCovid19::getRea)));
         } else if ("hosp".equals(filtreCovid.getFiltre())) {
-            counting = nouveauxCovid19List.stream()
+            counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(covid ->
                             Pair.of(covid.getJour(), covid.getCl_age90()), summingInt(ClasseAgeCovid19::getHosp)));
         } else if ("dc".equals(filtreCovid.getFiltre())) {
-            counting = nouveauxCovid19List.stream()
+            counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(covid ->
                             Pair.of(covid.getJour(), covid.getCl_age90()), summingInt(ClasseAgeCovid19::getDc)));
         }
@@ -164,19 +167,19 @@ public class CovidService {
         Map<Integer, Integer> counting = null;
 
         if ("rea".equals(filtreCovid.getFiltre())) {
-            counting = nouveauxCovid19List.stream()
+            counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(ClasseAgeCovid19::getCl_age90, summingInt(ClasseAgeCovid19::getRea)));
         } else if ("hosp".equals(filtreCovid.getFiltre())) {
-            counting = nouveauxCovid19List.stream()
+            counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(ClasseAgeCovid19::getCl_age90, summingInt(ClasseAgeCovid19::getHosp)));
         } else if ("dc".equals(filtreCovid.getFiltre())) {
-            counting = nouveauxCovid19List.stream()
+            counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(ClasseAgeCovid19::getCl_age90, summingInt(ClasseAgeCovid19::getDc)));
         }
         counting.remove(0);
 
         return Objects.requireNonNull(counting)
-                .entrySet().stream()
+                .entrySet().parallelStream()
                 .sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
@@ -202,31 +205,31 @@ public class CovidService {
                         .isBefore(LocalDate.parse(filtreCovid.getDateMax(), formatter).plusDays(1)));
     }
 
-    private Map<String, Integer> getTotalAgeByDate(FiltreCovid filtreCovid, ClasseAgeCovid19[] newCovidList) {
-        List<ClasseAgeCovid19> nouveauxCovid19List = filterTrancheAge(filtreCovid, newCovidList);
+    private Map<String, Integer> getTotalAgeByDate(FiltreCovid filtreCovid, List<ClasseAgeCovid19> nouveauxCovid19List) {
         Map<String, Integer> totalAgeByDate = null;
         if ("rea".equals(filtreCovid.getFiltre())) {
-            totalAgeByDate = nouveauxCovid19List.stream()
+            totalAgeByDate = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getRea)));
         } else if ("hosp".equals(filtreCovid.getFiltre())) {
-            totalAgeByDate = nouveauxCovid19List.stream()
+            totalAgeByDate = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getHosp)));
         } else if ("dc".equals(filtreCovid.getFiltre())) {
-            totalAgeByDate = nouveauxCovid19List.stream()
+            totalAgeByDate = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(ClasseAgeCovid19::getJour, summingInt(ClasseAgeCovid19::getDc)));
         }
         return Objects.requireNonNull(totalAgeByDate)
-                .entrySet().stream()
+                .entrySet().parallelStream()
                 .sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
     private List<ClasseAgeCovid19> filterTrancheAge(FiltreCovid filtreCovid, ClasseAgeCovid19[] newCovidList) {
-        return Arrays.stream(newCovidList)
-                .filter(covid19 -> filterRegion(filtreCovid.getRegion(), covid19) &&
-                        filterDateMinMax(filtreCovid, covid19.getJour())
-                ).toList();
+        List<ClasseAgeCovid19> list = Arrays.asList(newCovidList);
+        return list.parallelStream()
+                .filter(covid19 -> filterDateMinMax(filtreCovid, covid19.getJour()))
+                .filter(covid19 -> filterRegion(filtreCovid.getRegion(), covid19))
+                .toList();
     }
 
     private boolean filterSexe(String sexe, Covid19 covid19) {
