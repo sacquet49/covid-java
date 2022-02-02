@@ -45,8 +45,8 @@ public class CovidService {
         String url = "https://www.data.gouv.fr/api/2/datasets/5e7e104ace2080d9162b61d8/resources/";
         ResponseEntity<RootFichierCovid> response = restTemplate.getForEntity(url, RootFichierCovid.class);
         RootFichierCovid rootFichierCovid = response.getBody();
-        rootFichierCovid.getData()
-                .parallelStream().filter(file -> !file.getTitle().contains("metadonnees"))
+        rootFichierCovid.getData().stream()
+                .filter(file -> !file.getTitle().contains("metadonnees"))
                 .forEach(file -> fileService.saveFile(file));
         fileService.readJsonFile(HOSP, Covid19[].class);
         fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
