@@ -41,15 +41,6 @@ public class CovidController {
         return service.getDecesByDay();
     }
 
-    @GetMapping(value = PUBLIC_API + "/labelsDay")
-    public List<String> getLabelsDay() {
-        return service.getLabelsDay();
-    }
-
-    @GetMapping(value = PUBLIC_API + "/labelsDay/ByDate/{dateMin}/{dateMax}")
-    public List<String> getLabelsDayByDate(FiltreCovid filtreCovid) {
-        return service.getLabelsDayByDate(filtreCovid);
-    }
 
     @GetMapping(value = PUBLIC_API + "/trancheAge/{filtre}/{dateMin}/{dateMax}/{region}")
     public List<TrancheAge> getHospitaliseByTrancheAge(FiltreCovid filtreCovid) {

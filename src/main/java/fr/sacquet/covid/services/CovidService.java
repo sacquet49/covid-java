@@ -7,7 +7,7 @@ import fr.sacquet.covid.model.form.FiltreCovid;
 import fr.sacquet.covid.model.rest.RootFichierCovid;
 import fr.sacquet.covid.model.rest.TrancheAge;
 import lombok.AllArgsConstructor;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -28,6 +28,7 @@ import static java.util.stream.Collectors.summingInt;
 @Service
 @EnableScheduling
 @AllArgsConstructor
+@Slf4j
 public class CovidService {
 
     private RestTemplate restTemplate;
@@ -51,7 +52,7 @@ public class CovidService {
         fileService.readJsonFile(HOSP, Covid19[].class);
         fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
         fileService.readJsonFile(NEW_HOSP, NouveauxCovid19[].class);
-        return response.getBody();
+        return rootFichierCovid;
     }
 
     public Map<String, Integer> getDecesByDay() {
@@ -92,7 +93,9 @@ public class CovidService {
 
     public List<TrancheAge> getDataClassAgeByFiltreCovid(FiltreCovid filtreCovid) {
         ClasseAgeCovid19[] newCovidList = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
+        long startTime = System.currentTimeMillis();
         List<ClasseAgeCovid19> nouveauxCovid19List = filterTrancheAge(filtreCovid, newCovidList);
+        log.info(" Filtrage : " + (System.currentTimeMillis() - startTime) + " ms");
         Map<String, Integer> totalAgeByDate = getTotalAgeByDate(filtreCovid, nouveauxCovid19List);
         Map<Integer, TrancheAge> trancheAgesMap = trancheAges();
         Map<Pair<String, Integer>, Integer> counting = null;
@@ -140,28 +143,10 @@ public class CovidService {
         return returnData;
     }
 
-    public List<String> getLabelsDay() {
-        NouveauxCovid19[] newCovidList = fileService.readJsonFile(NEW_HOSP, NouveauxCovid19[].class);
-        return Arrays.stream(newCovidList)
-                .map(NouveauxCovid19::getJour)
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
-    }
-
-    public List<String> getLabelsDayByDate(FiltreCovid filtreCovid) {
-        ClasseAgeCovid19[] newCovidList = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
-        return Arrays.stream(newCovidList)
-                .map(ClasseAgeCovid19::getJour)
-                .distinct()
-                .filter(jour -> filterDateMinMax(filtreCovid, jour))
-                .sorted()
-                .collect(Collectors.toList());
-    }
-
     private Map<Integer, Integer> getHospByFilterAndDate(FiltreCovid filtreCovid, String date) {
         ClasseAgeCovid19[] newCovidList = fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
-        List<ClasseAgeCovid19> nouveauxCovid19List = Arrays.stream(newCovidList)
+        List<ClasseAgeCovid19> List = Arrays.asList(newCovidList);
+        List<ClasseAgeCovid19> nouveauxCovid19List = List.parallelStream()
                 .filter(covid19 -> filterDate(date, covid19.getJour())
                 ).toList();
         Map<Integer, Integer> counting = null;
@@ -176,7 +161,10 @@ public class CovidService {
             counting = nouveauxCovid19List.parallelStream()
                     .collect(groupingBy(ClasseAgeCovid19::getCl_age90, summingInt(ClasseAgeCovid19::getDc)));
         }
-        counting.remove(0);
+
+        if (counting != null && counting.size() > 0) {
+            counting.remove(0);
+        }
 
         return Objects.requireNonNull(counting)
                 .entrySet().parallelStream()

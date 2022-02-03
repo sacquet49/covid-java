@@ -262,47 +262,6 @@ class CovidServiceTest {
     }
 
     @Test
-    void getLabelsDay() {
-        // Setup
-        List<NouveauxCovid19> covid19List = getNouveauxCovid19s();
-        NouveauxCovid19[] nouveauxCovid19Array = covid19List.toArray(new NouveauxCovid19[0]);
-
-        // Given
-        when(fileService.readJsonFile(NEW_HOSP, NouveauxCovid19[].class)).thenReturn(nouveauxCovid19Array);
-
-        // When
-        List<String> result = covidService.getLabelsDay();
-
-        // Then
-        assertEquals(3, result.size());
-        assertEquals("2022-10-10", result.get(0));
-        assertEquals("2022-11-10", result.get(1));
-        assertEquals("2022-12-10", result.get(2));
-    }
-
-    @Test
-    void getLabelsDayByDate() {
-        // Setup
-        List<ClasseAgeCovid19> covid19List = getCovid19Class();
-        ClasseAgeCovid19[] nouveauxCovid19Array = covid19List.toArray(new ClasseAgeCovid19[0]);
-        FiltreCovid filtreCovid = FiltreCovid.builder()
-                .dateMin("2022-10-10").dateMax("2022-11-10")
-                .build();
-
-        // Given
-        when(fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class)).thenReturn(nouveauxCovid19Array);
-
-        // When
-        List<String> result = covidService.getLabelsDayByDate(filtreCovid);
-
-        // Then
-        assertEquals(2, result.size());
-        assertEquals("2022-10-10", result.get(0));
-        assertEquals("2022-11-10", result.get(1));
-
-    }
-
-    @Test
     void getHospitaliseTrancheAgeByDate() {
         // Setup
         List<ClasseAgeCovid19> covid19List = getCovid19Class();
