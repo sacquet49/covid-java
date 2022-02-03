@@ -6,4 +6,4 @@ COPY jar/covid.jar covid.jar
 RUN mkdir /covidFile/
 RUN chmod -R 777 /covidFile/
 
-ENTRYPOINT ["java","-jar","/covid.jar", "--spring.config.location=application.properties"]
+ENTRYPOINT ["java", "-Xmx700m", "-Xms700m", "-jar","/covid.jar", "--spring.config.location=application.properties"]
