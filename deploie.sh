@@ -15,6 +15,5 @@ cp target/covid-0.0.1-SNAPSHOT.jar docker/covid_app/jar/covid.jar
 cd $SCRIPT_DIR/docker
 docker-compose down -v --rmi all
 docker-compose up
-docker start covid-web_run
 
 systemctl restart nginx
