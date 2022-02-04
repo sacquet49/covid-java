@@ -2,6 +2,7 @@
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 # Maj source
+docker stop covid-web_run
 git pull origin master
 
 # installation application
