@@ -6,9 +6,10 @@ import fr.sacquet.covid.model.fichier.NouveauxCovid19;
 import fr.sacquet.covid.model.form.FiltreCovid;
 import fr.sacquet.covid.model.rest.RootFichierCovid;
 import fr.sacquet.covid.model.rest.TrancheAge;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,31 +28,42 @@ import static java.util.stream.Collectors.summingInt;
 
 @Service
 @EnableScheduling
-@AllArgsConstructor
 @Slf4j
 public class CovidService {
 
+    @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
     private FileService fileService;
+
+    @Value("${data.gouv.url}")
+    private String dataGouvUrl;
+
+    @Value("${enableInit}")
+    private boolean enableInit;
 
     @PostConstruct
     public void init() {
-        getAllCsv();
+        if(enableInit) {
+            getAllCsv();
+        }
     }
 
     @Scheduled(cron = "0 0 23 * * ?", zone = "Europe/Paris")
     public RootFichierCovid getAllCsv() {
         fileService.resetCache();
-        String url = "https://www.data.gouv.fr/api/2/datasets/5e7e104ace2080d9162b61d8/resources/";
+        String url = dataGouvUrl + "/api/2/datasets/5e7e104ace2080d9162b61d8/resources/";
         ResponseEntity<RootFichierCovid> response = restTemplate.getForEntity(url, RootFichierCovid.class);
         RootFichierCovid rootFichierCovid = response.getBody();
-        rootFichierCovid.getData().stream()
-                .filter(file -> !file.getTitle().contains("metadonnees"))
-                .forEach(file -> fileService.saveFile(file));
-        fileService.readJsonFile(HOSP, Covid19[].class);
-        fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
-        fileService.readJsonFile(NEW_HOSP, NouveauxCovid19[].class);
+        if (rootFichierCovid != null) {
+            rootFichierCovid.getData().stream()
+                    .filter(file -> !file.getTitle().contains("metadonnees"))
+                    .forEach(file -> fileService.saveFile(file));
+            fileService.readJsonFile(HOSP, Covid19[].class);
+            fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
+            fileService.readJsonFile(NEW_HOSP, NouveauxCovid19[].class);
+        }
         return rootFichierCovid;
     }
 

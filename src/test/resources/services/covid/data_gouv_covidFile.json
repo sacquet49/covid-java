@@ -1,0 +1,129 @@
+{
+  "data": [
+    {
+      "id": "63352e38-d353-4b54-bfd1-f1b3ee1cabd7",
+      "title": "donnees-hospitalieres-covid19-2022-02-03-19h10.csv",
+      "description": null,
+      "filetype": "file",
+      "type": "main",
+      "format": "csv",
+      "url": "https://static.data.gouv.fr/resources/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/20220203-191019/donnees-hospitalieres-covid19-2022-02-03-19h10.csv",
+      "latest": "http://localhost:9550/fr/datasets/r/63352e38-d353-4b54-bfd1-f1b3ee1cabd7",
+      "checksum": {
+        "type": "sha1",
+        "value": "e5686c37c2fd384b27e490a779ba197447b8855a"
+      },
+      "filesize": 8787027,
+      "mime": "text/csv",
+      "created_at": "2020-03-27T15:43:24.230000",
+      "published": "2020-03-27T15:43:24",
+      "last_modified": "2022-02-03T19:10:20.480000",
+      "metrics": {
+        "views": 69675
+      },
+      "extras": {
+        "check:status": 204,
+        "check:available": true,
+        "check:date": 1642338661,
+        "check:count-availability": 6
+      },
+      "preview_url": "/tabular/preview/?url=https%3A%2F%2Fstatic.data.gouv.fr%2Fresources%2Fdonnees-hospitalieres-relatives-a-lepidemie-de-covid-19%2F20220203-191019%2Fdonnees-hospitalieres-covid19-2022-02-03-19h10.csv",
+      "schema": {}
+    },
+    {
+      "id": "6fadff46-9efd-4c53-942a-54aca783c30c",
+      "title": "donnees-hospitalieres-nouveaux-covid19-2022-02-03-19h10.csv",
+      "description": null,
+      "filetype": "file",
+      "type": "main",
+      "format": "csv",
+      "url": "https://static.data.gouv.fr/resources/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/20220203-191015/donnees-hospitalieres-nouveaux-covid19-2022-02-03-19h10.csv",
+      "latest": "http://localhost:9550/fr/datasets/r/6fadff46-9efd-4c53-942a-54aca783c30c",
+      "checksum": {
+        "type": "sha1",
+        "value": "f95354164ba846d89011054ecc3796e80dd61e5e"
+      },
+      "filesize": 1726590,
+      "mime": "text/csv",
+      "created_at": "2020-04-07T22:32:02.138000",
+      "published": "2020-04-07T22:32:02",
+      "last_modified": "2022-02-03T19:10:15.560000",
+      "metrics": {
+        "views": 55559
+      },
+      "extras": {
+        "check:status": 204,
+        "check:available": true,
+        "check:date": 1642338661,
+        "check:count-availability": 6
+      },
+      "preview_url": "/tabular/preview/?url=https%3A%2F%2Fstatic.data.gouv.fr%2Fresources%2Fdonnees-hospitalieres-relatives-a-lepidemie-de-covid-19%2F20220203-191015%2Fdonnees-hospitalieres-nouveaux-covid19-2022-02-03-19h10.csv",
+      "schema": {}
+    },
+    {
+      "id": "08c18e08-6780-452d-9b8c-ae244ad529b3",
+      "title": "donnees-hospitalieres-classe-age-covid19-2022-02-03-19h10.csv",
+      "description": null,
+      "filetype": "file",
+      "type": "main",
+      "format": "csv",
+      "url": "https://static.data.gouv.fr/resources/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/20220203-191013/donnees-hospitalieres-classe-age-covid19-2022-02-03-19h10.csv",
+      "latest": "http://localhost:9550/fr/datasets/r/08c18e08-6780-452d-9b8c-ae244ad529b3",
+      "checksum": {
+        "type": "sha1",
+        "value": "14174aee57498bba42b0e558a66b118fa537cf4d"
+      },
+      "filesize": 5647853,
+      "mime": "text/csv",
+      "created_at": "2020-04-08T17:10:58.309000",
+      "published": "2020-04-08T17:10:58",
+      "last_modified": "2022-02-03T19:10:13.932000",
+      "metrics": {
+        "views": 29587
+      },
+      "extras": {
+        "check:status": 204,
+        "check:available": true,
+        "check:date": 1642338661,
+        "check:count-availability": 6
+      },
+      "preview_url": "/tabular/preview/?url=https%3A%2F%2Fstatic.data.gouv.fr%2Fresources%2Fdonnees-hospitalieres-relatives-a-lepidemie-de-covid-19%2F20220203-191013%2Fdonnees-hospitalieres-classe-age-covid19-2022-02-03-19h10.csv",
+      "schema": {}
+    },
+    {
+      "id": "9f94a259-2a8a-441d-bd0b-d6b45697d477",
+      "title": "metadonnees-sexe.csv",
+      "description": null,
+      "filetype": "file",
+      "type": "documentation",
+      "format": "csv",
+      "url": "https://static.data.gouv.fr/resources/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/20200331-160422/metadonnees-sexe.csv",
+      "latest": "http://localhost:9550/fr/datasets/r/9f94a259-2a8a-441d-bd0b-d6b45697d477",
+      "checksum": {
+        "type": "sha1",
+        "value": "a8ce869dd07b486f3e40cff6b59d68365180871f"
+      },
+      "filesize": 422,
+      "mime": "text/csv",
+      "created_at": "2020-03-31T16:04:22.961000",
+      "published": "2020-03-31T16:04:22",
+      "last_modified": "2020-03-31T16:04:34.712000",
+      "metrics": {
+        "views": 2277
+      },
+      "extras": {
+        "check:status": 204,
+        "check:available": true,
+        "check:date": 1642338661,
+        "check:count-availability": 6
+      },
+      "preview_url": "/tabular/preview/?url=https%3A%2F%2Fstatic.data.gouv.fr%2Fresources%2Fdonnees-hospitalieres-relatives-a-lepidemie-de-covid-19%2F20200331-160422%2Fmetadonnees-sexe.csv",
+      "schema": {}
+    }
+  ],
+  "next_page": null,
+  "previous_page": null,
+  "page": 1,
+  "page_size": 50,
+  "total": 15
+}
