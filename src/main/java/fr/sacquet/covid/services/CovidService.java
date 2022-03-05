@@ -8,15 +8,25 @@ import fr.sacquet.covid.model.rest.RootFichierCovid;
 import fr.sacquet.covid.model.rest.TrancheAge;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.TrustStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.SSLContext;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,9 +42,6 @@ import static java.util.stream.Collectors.summingInt;
 public class CovidService {
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private FileService fileService;
 
     @Value("${data.gouv.url}")
@@ -45,7 +52,7 @@ public class CovidService {
 
     @PostConstruct
     public void init() {
-        if(enableInit) {
+        if (enableInit) {
             getAllCsv();
         }
     }
@@ -54,7 +61,7 @@ public class CovidService {
     public RootFichierCovid getAllCsv() {
         fileService.resetCache();
         String url = dataGouvUrl + "/api/2/datasets/5e7e104ace2080d9162b61d8/resources/";
-        ResponseEntity<RootFichierCovid> response = restTemplate.getForEntity(url, RootFichierCovid.class);
+        ResponseEntity<RootFichierCovid> response = restTemplate().getForEntity(url, RootFichierCovid.class);
         RootFichierCovid rootFichierCovid = response.getBody();
         if (rootFichierCovid != null) {
             rootFichierCovid.getData().stream()
@@ -270,5 +277,29 @@ public class CovidService {
         trancheAges.put(90, TrancheAge.builder().indice("90").label(">90").color("#02a705")
                 .data(new HashMap<>()).dataP(new HashMap<>()).build());
         return trancheAges;
+    }
+
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
+            SSLContext sslContext = null;
+
+            sslContext = org.apache.http.ssl.SSLContexts.custom()
+                    .loadTrustMaterial(null, acceptingTrustStrategy)
+                    .build();
+
+            SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
+            CloseableHttpClient httpClient = HttpClients.custom()
+                    .setSSLSocketFactory(csf)
+                    .build();
+            HttpComponentsClientHttpRequestFactory requestFactory =
+                    new HttpComponentsClientHttpRequestFactory();
+            requestFactory.setHttpClient(httpClient);
+            restTemplate = new RestTemplate(requestFactory);
+        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+            e.printStackTrace();
+        }
+        return restTemplate;
     }
 }

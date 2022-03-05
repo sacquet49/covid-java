@@ -48,21 +48,21 @@ class CovidServiceTiTest {
                         .withBody(data)));
 
         // donnees-hospitalieres-covid19
-        FileInputStream dhc = new FileInputStream(BASE_PATH + "donnees-hospitalieres-covid19.csv");
+        FileInputStream dhc = new FileInputStream(BASE_PATH + "covid-hospit.csv");
         String dhcData = IOUtils.toString(dhc, "UTF-8");
         stubFor(get(urlEqualTo("/fr/datasets/r/63352e38-d353-4b54-bfd1-f1b3ee1cabd7"))
                 .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_OCTET_STREAM)
                         .withBody(dhcData.getBytes(StandardCharsets.UTF_8))));
 
         // donnees-hospitalieres-nouveaux-covid19
-        FileInputStream dhnc = new FileInputStream(BASE_PATH + "donnees-hospitalieres-nouveaux-covid19.csv");
+        FileInputStream dhnc = new FileInputStream(BASE_PATH + "covid-hospit-incid.csv");
         String dhncData = IOUtils.toString(dhnc, "UTF-8");
         stubFor(get(urlEqualTo("/fr/datasets/r/6fadff46-9efd-4c53-942a-54aca783c30c"))
                 .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_OCTET_STREAM)
                         .withBody(dhncData.getBytes(StandardCharsets.UTF_8))));
 
         // donnees-hospitalieres-classe-age-covid19
-        FileInputStream dhcac = new FileInputStream(BASE_PATH + "donnees-hospitalieres-classe-age-covid19.csv");
+        FileInputStream dhcac = new FileInputStream(BASE_PATH + "covid-hospit-clage10.csv");
         String dhcacData = IOUtils.toString(dhcac, "UTF-8");
         stubFor(get(urlEqualTo("/fr/datasets/r/08c18e08-6780-452d-9b8c-ae244ad529b3"))
                 .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_OCTET_STREAM)

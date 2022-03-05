@@ -2,7 +2,7 @@
   "data": [
     {
       "id": "63352e38-d353-4b54-bfd1-f1b3ee1cabd7",
-      "title": "donnees-hospitalieres-covid19-2022-02-03-19h10.csv",
+      "title": "covid-hospit-2022-02-03-19h10.csv",
       "description": null,
       "filetype": "file",
       "type": "main",
@@ -32,7 +32,7 @@
     },
     {
       "id": "6fadff46-9efd-4c53-942a-54aca783c30c",
-      "title": "donnees-hospitalieres-nouveaux-covid19-2022-02-03-19h10.csv",
+      "title": "covid-hospit-incid-2022-02-03-19h10.csv",
       "description": null,
       "filetype": "file",
       "type": "main",
@@ -62,7 +62,7 @@
     },
     {
       "id": "08c18e08-6780-452d-9b8c-ae244ad529b3",
-      "title": "donnees-hospitalieres-classe-age-covid19-2022-02-03-19h10.csv",
+      "title": "covid-hospit-clage10-2022-02-03-19h10.csv",
       "description": null,
       "filetype": "file",
       "type": "main",
