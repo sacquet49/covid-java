@@ -65,7 +65,9 @@ public class CovidService {
         RootFichierCovid rootFichierCovid = response.getBody();
         if (rootFichierCovid != null) {
             rootFichierCovid.getData().stream()
-                    .filter(file -> !file.getTitle().contains("metadonnees"))
+                    .filter(file -> !file.getTitle().contains("metadonnees") &&
+                            (file.getTitle().contains(HOSP) || file.getTitle().contains(CLASS_AGE) ||
+                                    file.getTitle().contains(NEW_HOSP)))
                     .forEach(file -> fileService.saveFile(file));
             fileService.readJsonFile(HOSP, Covid19[].class);
             fileService.readJsonFile(CLASS_AGE, ClasseAgeCovid19[].class);
